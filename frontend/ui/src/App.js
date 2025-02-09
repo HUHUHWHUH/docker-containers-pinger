@@ -13,7 +13,7 @@ function App() {
     return (
         <div className="App">
             <div className="container mt-4">
-                <h1 className="mb-4">Мониторинг контейнеров</h1>
+                <h1 className="mb-4">Пингер докер контейнеров запущен, цикл опроса контейнеров - 10 секунд</h1>
                 <PingResults/>
             </div>
         </div>

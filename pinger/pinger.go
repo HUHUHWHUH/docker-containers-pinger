@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/docker/docker/client"
+	"log"
+	"os/exec"
 	t "pinger/types"
 	"time"
 )
@@ -27,14 +29,43 @@ func pingContainer(dockerClient *client.Client, containerID string) (t.DockerCon
 		}
 	}
 
+	// Делаем пинг контейнера по IP адресу
+	pingSuccess := pingContainerByIP(ip)
 	container := t.DockerContainer{
-		ContainerId:               containerID,
-		Ip:                        ip,
-		PingTime:                  time.Now(),
-		LastSuccessfulPingTryTime: time.Now(),
-		Status:                    inspectedCntr.State.Status,
-		Name:                      inspectedCntr.Name,
+		ContainerId: containerID,
+		Ip:          ip,
+		PingTime:    time.Now(),
+		//LastSuccessfulPingTryTime: time.Now(),
+		Status: inspectedCntr.State.Status,
+		Name:   inspectedCntr.Name,
+	}
+
+	// Если пинг успешен, время последней успешной попытки обновляется
+	if pingSuccess {
+		container.LastSuccessfulPingTryTime = time.Now()
 	}
 
 	return container, nil
+
+	//container := t.DockerContainer{
+	//	ContainerId:               containerID,
+	//	Ip:                        ip,
+	//	PingTime:                  time.Now(),
+	//	LastSuccessfulPingTryTime: time.Now(),
+	//	Status:                    inspectedCntr.State.Status,
+	//	Name:                      inspectedCntr.Name,
+	//}
+	//return container, nil
+}
+
+// pingContainerByIP пингует контейнер по IP
+func pingContainerByIP(ip string) bool {
+	cmd := exec.Command("ping", "-c", "1", "-w", "2", ip) // -c 1 - 1 запрос, -w 2 - тайм-аут в 2 секунды
+	err := cmd.Run()
+	if err != nil {
+		log.Printf("Ошибка пинга: %v", err)
+		return false
+	}
+
+	return true
 }
